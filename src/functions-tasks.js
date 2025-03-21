@@ -133,17 +133,18 @@ function memoize(func) {
  * retryer() => 2
  */
 function retry(func, attempts) {
-  for (let i = 0; i < attempts; i += 1) {
-    try {
-      func();
-    } catch (e) {
-      console.log(e);
+  return () => {
+    let lastError;
+    for (let i = 0; i < attempts; i += 1) {
+      try {
+        return func();
+      } catch (error) {
+        lastError = error;
+      }
     }
-  }
-
-  return func;
+    throw lastError;
+  };
 }
-
 /**
  * Returns the logging wrapper for the specified method,
  * Logger has to log the start and end of calling the specified function.
@@ -168,7 +169,7 @@ function retry(func, attempts) {
  *
  */
 function logger(func, logFunc) {
-  return function (...args) {
+  return (...args) => {
     const argsString = args.map((arg) => JSON.stringify(arg)).join(',');
     logFunc(`${func.name}(${argsString}) starts`);
     const result = func(...args);
